@@ -102,7 +102,7 @@ class OrmExpressionResult:
         return {f'{self.alias}__{"i" if self.ignore_case else ""}{self.lookup}': self.value}
 
 class QQ(models.Q):
-    # TODO: find the way to override the default Q object instead of creating a subclass
+    # TODO: use it to create a Q object instead of overrie it
     orm_expression_results: List[OrmExpressionResult] = []
 
     def __init__(self, *args, _connector=None, _negated=False, **kwargs):
