@@ -45,6 +45,14 @@ class HighLevelTestCase(TestCase):
         self.assertEqual(list(queryset), ['Lautaro Redbear'])
         queryset = Person.objects.filter(~QQ(Person.full_name() == 'Lautaro Redbear')).values_list('full_name', flat=True)
         self.assertEqual(list(queryset), ['Gabriel Smith'])
+        # FIXME
+        # queryset = Person.objects.filter(QQ(Person.full_name() == 'Lautaro Redbear') | QQ(Person.full_name() == 'Gabriel Smith')).values_list('full_name', flat=True)
+        # self.assertEqual(list(queryset), ['Lautaro Redbear', 'Gabriel Smith'])
+        # FIXME
+        # queryset = Person.objects.filter(QQ(Person.full_name() == 'Lautaro Redbear') & QQ(Person.full_name() == 'Gabriel Smith')).values_list('full_name', flat=True)
+        # self.assertEqual(list(queryset), [])
+        queryset = Person.objects.filter(QQ(Person.full_name() == 'Lautaro Redbear') & QQ(Person.notes_concat() == '1 - 2')).values_list('full_name', 'notes_concat')
+        self.assertEqual(list(queryset), [('Lautaro Redbear', '1 - 2')])
 
     def test_queryset_orm_property_annotation_with_through(self):
         queryset = Profile.objects.annotate(Person.full_name(through='person')).values_list('full_name', flat=True)
