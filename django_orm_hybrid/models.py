@@ -27,8 +27,8 @@ class OrmManager(models.Manager):
 
         for qq_result in qq_results:
             for orm_expression in qq_result.orm_expression_results:
-                orm_expression.method = 'exclude' if qq_result.negated else 'filter'
-                self = orm_expression.apply(queryset=self)
+                self = self.annotate(**orm_expression._annotate())
+        self = self.exclude(*qq_results)
 
         for orm_expression_result in hybrid_expression_results:
             self = orm_expression_result.apply(queryset=self)
@@ -55,8 +55,8 @@ class OrmManager(models.Manager):
 
         for qq_result in qq_results:
             for orm_expression in qq_result.orm_expression_results:
-                orm_expression.method = 'exclude' if qq_result.negated else 'filter'
-                self = orm_expression.apply(queryset=self)
+                self = self.annotate(**orm_expression._annotate())
+        self = self.filter(*qq_results)
 
         for orm_expression_result in hybrid_expression_results:
             self = orm_expression_result.apply(queryset=self)
@@ -102,19 +102,17 @@ class OrmExpressionResult:
         return {f'{self.alias}__{"i" if self.ignore_case else ""}{self.lookup}': self.value}
 
 class QQ(models.Q):
-    # TODO: use it to create a Q object instead of overrie it
     orm_expression_results: List[OrmExpressionResult] = []
 
     def __init__(self, *args, _connector=None, _negated=False, **kwargs):
         common_args = []
         for arg in args:
             if isinstance(arg, OrmExpressionResult):
-                arg.method = 'exclude' if _negated else 'filter'
                 self.orm_expression_results.append(arg)
+                kwargs.update(arg._filter_exclude())
                 continue
             common_args.append(arg)
-        super().__init__(children=[*common_args, *sorted(kwargs.items())], connector=_connector, negated=_negated)
-
+        super().__init__(*common_args, _connector=_connector, _negated=_negated, **kwargs)
 
 
 @dataclass
