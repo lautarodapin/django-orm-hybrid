@@ -217,5 +217,14 @@ class orm_property:
     def expression(self, expr):
         if 'through' not in inspect.getfullargspec(expr).args:
             warnings.warn(f'{expr} should have a "through" argument')
+        if expr.__doc__ is None:
+            expr.__doc__ = self.func.__doc__ if self.func.__doc__ else ''
+        expr.__doc__ += '''
+
+        **kwargs:
+            * alias (str): alias to be annotated.
+            * through (str): through from where be accesss.
+        '''
+
         self.expr = expr
         return self
