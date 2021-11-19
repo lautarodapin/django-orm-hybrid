@@ -76,7 +76,7 @@ class OrmManager(models.Manager):
                 raise ValueError(f'{arg=} is not an OrmExpression')
             common_annotate_args.append(arg)
 
-        self = super().annotate(*common_annotate_args, **kwargs).annotate(**orm_expression_results)
+        self = super().annotate(**orm_expression_results).annotate(*common_annotate_args, **kwargs)
         return self
 
 

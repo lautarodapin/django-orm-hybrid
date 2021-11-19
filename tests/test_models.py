@@ -1,3 +1,4 @@
+from django.db.models.expressions import Case, Value, When
 from django.test import TestCase
 from unittest import skip
 from django.db import models
@@ -521,10 +522,38 @@ class HighLevelTestCase(TestCase):
 
     @skip('Implement check for database usage, this should only work on postgres')
     def test_queryset_orm_property_filter_search(self):
+        # FIXME
         queryset = Person.objects.filter(Person.full_name().search(f'redbear')).values_list('full_name', flat=True)
         self.assertEqual(list(queryset), ['Lautaro Redbear'])
 
     @skip('Implement check for database usage, this should only work on postgres')
     def test_queryset_orm_property_filter_search_with_through(self):
+        # FIXME
         queryset = Profile.objects.filter(Person.full_name(through='person').search(f'redbear')).values_list('full_name', flat=True)
         self.assertEqual(list(queryset), ['Lautaro Redbear'])
+
+    # @skip('FIXME, this should annotate the clause before and then apply a filter')
+    def test_queryset_orm_property_annotate_case_when(self):
+        queryset = Person.objects.annotate(Person.full_name()).annotate(
+            case_when=Case(
+                When(full_name__icontains='redbear', then=Value(True)),
+                default=Value(False),
+            ),
+        ).filter(case_when=True)
+        self.assertEqual(list(queryset), [self.person1])
+        queryset = Person.objects.annotate(
+            Person.full_name(),
+            case_when=Case(
+                When(full_name__icontains='redbear', then=Value(True)),
+                default=Value(False),
+            ),
+        ).filter(case_when=True)
+        self.assertEqual(list(queryset), [self.person1])
+        # FIXME
+        # queryset = Person.objects.annotate(
+        #     case_when=Case(
+        #         When(Person.full_name().contains('redbear'), then=Value(True)),
+        #         default=Value(False),
+        #     ),
+        # ).filter(case_when=True)
+        # self.assertEqual(list(queryset), [self.person1])
