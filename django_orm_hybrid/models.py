@@ -90,6 +90,10 @@ class OrmExpressionResult:
     method: Literal['filter', 'exclude'] = 'filter'
     alias: Optional[str] = 'asdaslkdj'
     ignore_case: Optional[bool] = False
+    
+    @property
+    def expression(self):
+        return self._filter_exclude
 
     def apply(self, queryset: models.QuerySet) -> models.QuerySet:
         queryset = queryset.annotate(**self._annotate())
