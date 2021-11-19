@@ -549,10 +549,10 @@ class HighLevelTestCase(TestCase):
             ),
         ).filter(case_when=True)
         self.assertEqual(list(queryset), [self.person1])
-        # FIXME
+        # FIXME  OrmExpressionResult instances can't be used inside expressions because it has to be previusly annotated
         # queryset = Person.objects.annotate(
         #     case_when=Case(
-        #         When(Person.full_name().contains('redbear'), then=Value(True)),
+        #         When(Person.full_name().contains('redbear').expression, then=Value(True)),
         #         default=Value(False),
         #     ),
         # ).filter(case_when=True)
